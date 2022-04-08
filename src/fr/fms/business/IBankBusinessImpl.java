@@ -167,7 +167,7 @@ public class IBankBusinessImpl implements IBankBusiness {
 		if (!accounts.containsKey(accountNumber)) {
 			throw new Exception("Ce compte n'existe pas !");
 		}
-		System.out.print("Bonjour " + accounts.get(accountNumber).getCustomer().getFirstName());
+		System.out.println("Bonjour " + accounts.get(accountNumber).getCustomer().getFirstName() + ", que souhaitez vous faire ?");
 	}
 	
 }

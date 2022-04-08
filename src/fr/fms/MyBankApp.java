@@ -35,11 +35,39 @@ public class MyBankApp {
 		
 		System.out.println("-----------");
 		System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
-		Long accountNumber = input();
+		Long accountNumber = inputAccountNumber();
 		
 		try {
 			bankJob.checkAccountValid(accountNumber);
-			menu();
+			int choice = 0;
+			while (choice != 6) {
+				menu();
+				choice = inputMenu();
+				
+				switch (choice) {
+				case 1:
+					System.out.println("Versement");
+					break;
+				case 2:
+					System.out.println("Retrait");
+					break;
+				case 3:
+					System.out.println("Virement");
+					break;
+				case 4:
+					System.out.println("Info compte");
+					break;
+				case 5:
+					System.out.println("Liste des opérations");
+					break;
+				case 6:
+					System.out.println("Déconnexion");
+					break;
+				default:
+					System.out.println("Mauvaise saisie, recommencez !");
+					break;
+				}
+			}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -88,15 +116,22 @@ public class MyBankApp {
 //			System.out.println(trans);
 	}
 
-	public static Long input() {
+	public static Long inputAccountNumber() {
 		while (scan.hasNextLong() == false) {
 			scan.next();
 		}
 		return scan.nextLong();
 	}
 	
+	public static int inputMenu() {
+		while (scan.hasNextInt() == false) {
+			scan.next();
+		}
+		return scan.nextInt();
+	}
+	
 	public static void menu() {
-		System.out.println(", que souhaitez vous faire ? Tapez le numéro correspond ");
+		System.out.println("--------Tapez le numéro correspond--------");
 		System.out.println("1 : Versement - 2 : Retrait - 3 : Virement - 4 - Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
 	}
 }
