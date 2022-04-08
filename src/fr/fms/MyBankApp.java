@@ -1,8 +1,6 @@
 package fr.fms;
 
-import java.nio.channels.AcceptPendingException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Scanner;
 
 import fr.fms.business.IBankBusinessImpl;
@@ -54,22 +52,21 @@ public class MyBankApp {
 
 					while (scan.hasNextInt() == false)
 						scan.next();
-					
+
 					choice = scan.nextInt();
 					switch (choice) {
 					case 1:
 						System.out.println("Saissisez le montant à verser sur ce compte");
-						while (scan.hasNextDouble() == false)
-							scan.next();
-						bankJob.pay(accountId, scan.nextDouble());
-						// CHECK IF AMOUNT NEG Regex ?
+						try {
+							bankJob.pay(accountId, isAmountPositive());
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+						}
 						break;
 					case 2:
 						System.out.println("Saissisez le montant à retirer sur ce compte");
-						while (scan.hasNextDouble() == false)
-							scan.next();
 						try {
-							bankJob.withdraw(accountId, scan.nextDouble());
+							bankJob.withdraw(accountId, isAmountPositive());
 						} catch (Exception e) {
 							System.out.println(e.getMessage());
 						}
@@ -79,13 +76,13 @@ public class MyBankApp {
 						while (scan.hasNextLong() == false)
 							scan.next();
 						long accDes = scan.nextLong();
-						System.out.println("Saissisez le montant à virer sur ce compte");
-						while (scan.hasNextDouble() == false)
-							scan.next();
+
 						try {
-							bankJob.transfert(accountId, accDes, scan.nextDouble());
+							bankJob.consultAccount(accDes); // verif si le compte destinataire existe si oui on continue
+							System.out.println("Saissisez le montant à virer sur ce compte");
+							bankJob.transfert(accountId, accDes, isAmountPositive());
 						} catch (Exception e) {
-							e.getMessage();
+							System.out.println(e.getMessage());
 						}
 						break;
 					case 4:
@@ -113,13 +110,35 @@ public class MyBankApp {
 				System.out.println(e.getMessage());
 			}
 		} while (!app);
+		scan.close();
 	}
 
+	/**
+	 * Affiche le menu de l'application
+	 */
 	public static void menu() {
 		System.out.println();
 		System.out.println("--------Tapez le numéro correspond--------");
 		System.out.println(
 				"1 : Versement - 2 : Retrait - 3 : Virement - 4 : Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
 		System.out.println();
+	}
+
+	/**
+	 * Recup le montant saisi, verif si positif et le retourne
+	 * 
+	 * @param amount
+	 * @return
+	 */
+	public static double isAmountPositive() {
+		while (scan.hasNextDouble() == false)
+			scan.next();
+
+		double amount = scan.nextDouble();
+
+		if (amount < 0) {
+			throw new IllegalArgumentException("Le montant ne peut être négatif.");
+		}
+		return amount;
 	}
 }

@@ -163,14 +163,14 @@ public class IBankBusinessImpl implements IBankBusiness {
 		return list;
 	}
 
-//	/**
-//	 * Renvoi la liste des comptes de notre banque
-//	 * 
-//	 * @return ArrayList<Account>
-//	 */
-//	public ArrayList<Account> listAccounts() {
-//		return new ArrayList<Account>(accounts.values());
-//	}
+	/**
+	 * Renvoi la liste des comptes de notre banque
+	 * 
+	 * @return ArrayList<Account>
+	 */
+	public ArrayList<Account> listAccounts() {
+		return new ArrayList<Account>(accounts.values());
+	}
 
 	/**
 	 * Ajoute un compte à l'objet client
