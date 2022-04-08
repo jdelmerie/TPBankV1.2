@@ -90,9 +90,9 @@ public class IBankBusinessImpl implements IBankBusiness {
 	 * @param amount    correspond au montant à retirer
 	 */
 	@Override
-	public void withdraw(long accountId, double amount) throws Exception { // retrait
+	public boolean withdraw(long accountId, double amount) throws Exception { // retrait
 		Account account;
-
+		boolean bool = true;
 		try {
 			account = consultAccount(accountId);
 			if (account != null) {
@@ -109,33 +109,41 @@ public class IBankBusinessImpl implements IBankBusiness {
 					Transaction trans = new Withdrawal(numTransactions++, new Date(), amount, accountId);
 					account.getListTransactions().add(trans); // création + ajout d'une opération de retrait
 				} else {
+					bool = false;
 					throw new Exception("Vous avez dépassé vos capacités de retrait !");
 				}
 			}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
+
+		return bool;
 	}
 
-//	/**
-//	 * méthode qui effectue un virement d'un compte src vers un compte dest,
-//	 * décomposé en 2 étapes : retrait puis versement
-//	 * 
-//	 * @param accIdSrc correspond à l'id du compte source
-//	 * @param accIdSrc correspond à l'id du compte destinataire
-//	 * @param amount   correspond au montant à virer
-//	 */
-//	@Override
-//	public void transfert(long accIdSrc, long accIdDest, double amount) { // virement
-//		if (accIdSrc == accIdDest)
-//			System.out.println("vous ne pouvez retirer et verser sur le même compte !");
-//		else {
-//			if (withdraw(accIdSrc, amount)) { // retrait si c'est possible
-//				pay(accIdDest, amount); // alors versement
-//			} else
-//				System.out.println("virement impossible");
-//		}
-//	}
+	/**
+	 * méthode qui effectue un virement d'un compte src vers un compte dest,
+	 * décomposé en 2 étapes : retrait puis versement
+	 * 
+	 * @param accIdSrc correspond à l'id du compte source
+	 * @param accIdSrc correspond à l'id du compte destinataire
+	 * @param amount   correspond au montant à virer
+	 */
+	@Override
+	public void transfert(long accIdSrc, long accIdDest, double amount) throws Exception { // virement
+		if (accIdSrc == accIdDest) {
+			throw new Exception("Vous ne pouvez retirer et verser sur le même compte !");
+		} else {
+			try {
+				if (withdraw(accIdSrc, amount)) { // retrait si c'est possible
+					pay(accIdDest, amount); // alors versement
+				} else {
+					throw new Exception("Virement impossible !");
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+	}
 
 	/**
 	 * Renvoi la liste des transactions sur un compte
