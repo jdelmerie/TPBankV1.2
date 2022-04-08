@@ -1,5 +1,6 @@
 package fr.fms;
 
+import java.nio.channels.AcceptPendingException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -32,18 +33,20 @@ public class MyBankApp {
 		System.out.println("notre banquier ajoute les 2 comptes");
 		bankJob.addAccount(firstAccount);
 		bankJob.addAccount(secondAccount);
-		
+
 		System.out.println("-----------");
 		System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
-		Long accountNumber = inputAccountNumber();
-		
+		Long accountId = inputAccountNumber();
+
 		try {
-			bankJob.checkAccountValid(accountNumber);
+			Account account = bankJob.consultAccount(accountId);
+			System.out.println("Bonjour " + account.getCustomer().getFirstName() + ", que souhaitez vous faire ?");
+			
 			int choice = 0;
 			while (choice != 6) {
 				menu();
 				choice = inputMenu();
-				
+
 				switch (choice) {
 				case 1:
 					System.out.println("Versement");
@@ -55,7 +58,8 @@ public class MyBankApp {
 					System.out.println("Virement");
 					break;
 				case 4:
-					System.out.println("Info compte");
+					System.out.println("Information de ce compte");
+					System.out.println(account);
 					break;
 				case 5:
 					System.out.println("Liste des opérations");
@@ -71,7 +75,6 @@ public class MyBankApp {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		
 
 //		// banquier ou client
 //		bankJob.pay(firstAccount.getAccountId(), 500); // versement de 500 euros sur le compte de robert
@@ -122,16 +125,18 @@ public class MyBankApp {
 		}
 		return scan.nextLong();
 	}
-	
+
 	public static int inputMenu() {
 		while (scan.hasNextInt() == false) {
 			scan.next();
 		}
 		return scan.nextInt();
 	}
-	
+
 	public static void menu() {
 		System.out.println("--------Tapez le numéro correspond--------");
-		System.out.println("1 : Versement - 2 : Retrait - 3 : Virement - 4 - Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
+		System.out.println(
+				"1 : Versement - 2 : Retrait - 3 : Virement - 4 : Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
+		System.out.println();
 	}
 }
