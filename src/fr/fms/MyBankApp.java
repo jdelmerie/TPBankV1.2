@@ -36,23 +36,38 @@ public class MyBankApp {
 
 		System.out.println("-----------");
 		System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
-		Long accountId = inputAccountNumber();
+		while (scan.hasNextLong() == false)
+			scan.next();
+		Long accountId = scan.nextLong();
 
 		try {
 			Account account = bankJob.consultAccount(accountId);
 			System.out.println("Bonjour " + account.getCustomer().getFirstName() + ", que souhaitez vous faire ?");
-			
+
 			int choice = 0;
 			while (choice != 6) {
 				menu();
-				choice = inputMenu();
 
-				switch (choice) {
+				while (scan.hasNextInt() == false)
+					scan.next();
+
+				switch (scan.nextInt()) {
 				case 1:
-					System.out.println("Versement");
+					System.out.println("Saissisez le montant à verser sur ce compte");
+					while (scan.hasNextDouble() == false)
+						scan.next();
+					bankJob.pay(accountId, scan.nextDouble());
+					// CHECK IF AMOUNT NEG Regex ?
 					break;
 				case 2:
-					System.out.println("Retrait");
+					System.out.println("Saissisez le montant à retirer sur ce compte");
+					while (scan.hasNextDouble() == false)
+						scan.next();
+					try {
+						bankJob.withdraw(accountId, scan.nextDouble());
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
 					break;
 				case 3:
 					System.out.println("Virement");
@@ -62,7 +77,13 @@ public class MyBankApp {
 					System.out.println(account);
 					break;
 				case 5:
-					System.out.println("Liste des opérations");
+					if (bankJob.listTransactions(accountId).size() > 0) {
+						System.out.println("Liste des opérations");
+						for (Transaction trans : bankJob.listTransactions(accountId))
+							System.out.println(trans);
+					} else {
+						System.out.println("Aucune opération sur ce compte pour l'instant.");
+					}
 					break;
 				case 6:
 					System.out.println("Déconnexion");
@@ -119,21 +140,8 @@ public class MyBankApp {
 //			System.out.println(trans);
 	}
 
-	public static Long inputAccountNumber() {
-		while (scan.hasNextLong() == false) {
-			scan.next();
-		}
-		return scan.nextLong();
-	}
-
-	public static int inputMenu() {
-		while (scan.hasNextInt() == false) {
-			scan.next();
-		}
-		return scan.nextInt();
-	}
-
 	public static void menu() {
+		System.out.println();
 		System.out.println("--------Tapez le numéro correspond--------");
 		System.out.println(
 				"1 : Versement - 2 : Retrait - 3 : Virement - 4 : Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");

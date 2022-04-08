@@ -60,52 +60,63 @@ public class IBankBusinessImpl implements IBankBusiness {
 		return account;
 	}
 
-//	/**
-//	 * méthode qui effectue le versement d'un montant sur un compte s'il existe
-//	 * 
-//	 * @param accountId correspond à l'id du compte sur lequel effectuer le
-//	 *                  versement
-//	 * @param amount    correspond au montant à verser
-//	 */
-//	@Override
-//	public void pay(long accountId, double amount) { // versement
-//		Account account = consultAccount(accountId);
-//		if (account != null) {
-//			account.setBalance(account.getBalance() + amount);
-//			Transaction trans = new Transfert(numTransactions++, new Date(), amount, accountId);
-//			account.getListTransactions().add(trans); // création + ajout d'une opération de versement
-//		}
-//	}
-//
-//	/**
-//	 * méthode qui effectue le retrait d'un montant sur un compte existant tout en
-//	 * gérant le découvert autorisé qqsoit le compte
-//	 * 
-//	 * @param accountId correspond à l'id du compte sur lequel effectuer le retrait
-//	 * @param amount    correspond au montant à retirer
-//	 */
-//	@Override
-//	public boolean withdraw(long accountId, double amount) { // retrait
-//		Account account = consultAccount(accountId);
-//		if (account != null) {
-//			double capacity = 0;
-//			if (account instanceof Current) {
-//				capacity = account.getBalance() + ((Current) account).getOverdraft(); // solde + decouvert autorisé
-//			} else
-//				capacity = account.getBalance();
-//			if (amount <= capacity) {
-//				account.setBalance(account.getBalance() - amount);
-//				Transaction trans = new Withdrawal(numTransactions++, new Date(), amount, accountId);
-//				account.getListTransactions().add(trans); // création + ajout d'une opération de retrait
-//			} else {
-//				System.out.println("vous avez dépassé vos capacités de retrait !");
-//				return false;
-//			}
-//		} else
-//			return false; // compte inexistant -> retrait impossible
-//		return true; // retrait effectué
-//	}
-//
+	/**
+	 * méthode qui effectue le versement d'un montant sur un compte s'il existe
+	 * 
+	 * @param accountId correspond à l'id du compte sur lequel effectuer le
+	 *                  versement
+	 * @param amount    correspond au montant à verser
+	 */
+	@Override
+	public void pay(long accountId, double amount) { // versement
+		Account account;
+		try {
+			account = consultAccount(accountId);
+			if (account != null) {
+				account.setBalance(account.getBalance() + amount);
+				Transaction trans = new Transfert(numTransactions++, new Date(), amount, accountId);
+				account.getListTransactions().add(trans); // création + ajout d'une opération de versement
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	/**
+	 * méthode qui effectue le retrait d'un montant sur un compte existant tout en
+	 * gérant le découvert autorisé qqsoit le compte
+	 * 
+	 * @param accountId correspond à l'id du compte sur lequel effectuer le retrait
+	 * @param amount    correspond au montant à retirer
+	 */
+	@Override
+	public void withdraw(long accountId, double amount) throws Exception { // retrait
+		Account account;
+
+		try {
+			account = consultAccount(accountId);
+			if (account != null) {
+				double capacity = 0;
+
+				if (account instanceof Current) {
+					capacity = account.getBalance() + ((Current) account).getOverdraft(); // solde + decouvert autorisé
+				} else {
+					capacity = account.getBalance();
+				}
+
+				if (amount <= capacity) {
+					account.setBalance(account.getBalance() - amount);
+					Transaction trans = new Withdrawal(numTransactions++, new Date(), amount, accountId);
+					account.getListTransactions().add(trans); // création + ajout d'une opération de retrait
+				} else {
+					throw new Exception("vous avez dépassé vos capacités de retrait !");
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
 //	/**
 //	 * méthode qui effectue un virement d'un compte src vers un compte dest,
 //	 * décomposé en 2 étapes : retrait puis versement
@@ -125,18 +136,25 @@ public class IBankBusinessImpl implements IBankBusiness {
 //				System.out.println("virement impossible");
 //		}
 //	}
-//
-//	/**
-//	 * Renvoi la liste des transactions sur un compte
-//	 * 
-//	 * @param accountId
-//	 * @return ArrayList<Transaction>
-//	 */
-//	@Override
-//	public ArrayList<Transaction> listTransactions(long accountId) {
-//		return consultAccount(accountId).getListTransactions();
-//	}
-//
+
+	/**
+	 * Renvoi la liste des transactions sur un compte
+	 * 
+	 * @param accountId
+	 * @return ArrayList<Transaction>
+	 * @throws Exception
+	 */
+	@Override
+	public ArrayList<Transaction> listTransactions(long accountId) {
+		ArrayList<Transaction> list = null;
+		try {
+			list = consultAccount(accountId).getListTransactions();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return list;
+	}
+
 //	/**
 //	 * Renvoi la liste des comptes de notre banque
 //	 * 
