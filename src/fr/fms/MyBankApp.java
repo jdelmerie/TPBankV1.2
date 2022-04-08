@@ -35,67 +35,74 @@ public class MyBankApp {
 		bankJob.addAccount(secondAccount);
 
 		System.out.println("-----------");
-		System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
-		while (scan.hasNextLong() == false)
-			scan.next();
-		Long accountId = scan.nextLong();
 
-		try {
-			Account account = bankJob.consultAccount(accountId);
-			System.out.println("Bonjour " + account.getCustomer().getFirstName() + ", que souhaitez vous faire ?");
+		boolean app = false;
 
-			int choice = 0;
-			while (choice != 6) {
-				menu();
+		do {
+			System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
+			while (scan.hasNextLong() == false)
+				scan.next();
+			Long accountId = scan.nextLong();
+			Account account;
+			try {
+				account = bankJob.consultAccount(accountId);
+				app = true;
+				int choice = 0;
 
-				while (scan.hasNextInt() == false)
-					scan.next();
+				while (choice != 6) {
+					menu();
 
-				switch (scan.nextInt()) {
-				case 1:
-					System.out.println("Saissisez le montant à verser sur ce compte");
-					while (scan.hasNextDouble() == false)
+					while (scan.hasNextInt() == false)
 						scan.next();
-					bankJob.pay(accountId, scan.nextDouble());
-					// CHECK IF AMOUNT NEG Regex ?
-					break;
-				case 2:
-					System.out.println("Saissisez le montant à retirer sur ce compte");
-					while (scan.hasNextDouble() == false)
-						scan.next();
-					try {
-						bankJob.withdraw(accountId, scan.nextDouble());
-					} catch (Exception e) {
-						System.out.println(e.getMessage());
+					
+					choice = scan.nextInt();
+					switch (choice) {
+					case 1:
+						System.out.println("Saissisez le montant à verser sur ce compte");
+						while (scan.hasNextDouble() == false)
+							scan.next();
+						bankJob.pay(accountId, scan.nextDouble());
+						// CHECK IF AMOUNT NEG Regex ?
+						break;
+					case 2:
+						System.out.println("Saissisez le montant à retirer sur ce compte");
+						while (scan.hasNextDouble() == false)
+							scan.next();
+						try {
+							bankJob.withdraw(accountId, scan.nextDouble());
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+						}
+						break;
+					case 3:
+						System.out.println("Virement");
+						break;
+					case 4:
+						System.out.println("Information de ce compte");
+						System.out.println(account);
+						break;
+					case 5:
+						if (bankJob.listTransactions(accountId).size() > 0) {
+							System.out.println("Liste des opérations");
+							for (Transaction trans : bankJob.listTransactions(accountId))
+								System.out.println(trans);
+						} else {
+							System.out.println("Aucune opération sur ce compte pour l'instant.");
+						}
+						break;
+					case 6:
+						System.out.println("Déconnexion");
+						app = false;
+						break;
+					default:
+						System.out.println("Mauvaise saisie, recommencez !");
 					}
-					break;
-				case 3:
-					System.out.println("Virement");
-					break;
-				case 4:
-					System.out.println("Information de ce compte");
-					System.out.println(account);
-					break;
-				case 5:
-					if (bankJob.listTransactions(accountId).size() > 0) {
-						System.out.println("Liste des opérations");
-						for (Transaction trans : bankJob.listTransactions(accountId))
-							System.out.println(trans);
-					} else {
-						System.out.println("Aucune opération sur ce compte pour l'instant.");
-					}
-					break;
-				case 6:
-					System.out.println("Déconnexion");
-					break;
-				default:
-					System.out.println("Mauvaise saisie, recommencez !");
-					break;
 				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
+		} while (!app);
+
 
 //		// banquier ou client
 //		bankJob.pay(firstAccount.getAccountId(), 500); // versement de 500 euros sur le compte de robert
