@@ -2,9 +2,9 @@ package fr.fms;
 
 import java.util.Date;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import fr.fms.business.IBankBusinessImpl;
-import fr.fms.entities.Account;
 import fr.fms.entities.Current;
 import fr.fms.entities.Customer;
 import fr.fms.entities.Saving;
@@ -13,63 +13,48 @@ import fr.fms.entities.Transaction;
 public class MyBankApp {
 
 	private static Scanner scan = new Scanner(System.in);
+	private static IBankBusinessImpl bankJob;
+	private static Customer robert;
+	private static Customer julie;
+	private static Current firstAccount;
+	private static Saving secondAccount;
 
 	public static void main(String[] args) {
-		// représente l'activité de notre banque
-		IBankBusinessImpl bankJob = new IBankBusinessImpl();
 
-		System.out.println("création de 2 comptes bancaires");
-		Customer robert = new Customer(1, "dupont", "robert", "robert.dupont@xmail.com");
-		Customer julie = new Customer(2, "jolie", "julie", "julie.jolie@xmail.com");
-		Current firstAccount = new Current(100200300, new Date(), 1500, 200, robert);
-		Saving secondAccount = new Saving(200300400, new Date(), 2000, 5.5, julie);
+		initBank();
 
-		System.out.println("Affichage des données des 2 comptes");
-		System.out.println(firstAccount);
-		System.out.println(secondAccount);
+		System.out.println("Bonjour et bienvenue dans MyBankApp");
+		while (true) {
+			System.out.println("Saisissez un numéro de compte bancaire valide : ");
+			Long accountId = checkAccountId();
+			System.out.print("Bonjour, " + bankJob.consultAccount(accountId).getCustomer().getFirstName()
+					+ " que souhaitez-vous faire ?");
+			int choice = 0;
 
-		System.out.println("notre banquier ajoute les 2 comptes");
-		bankJob.addAccount(firstAccount);
-		bankJob.addAccount(secondAccount);
-
-		System.out.println("-----------");
-
-		boolean app = false;
-
-		do {
-			System.out.println("Bonjour, saisissez un numéro de compte bancaire valide : ");
-			while (scan.hasNextLong() == false)
-				scan.next();
-			Long accountId = scan.nextLong();
-			Account account;
-			try {
-				account = bankJob.consultAccount(accountId);
-				app = true;
-				int choice = 0;
-
-				while (choice != 6) {
-					menu();
+			while (choice != 6) {
+				try {
+					System.out.println();
+					System.out.println("--------Tapez le numéro correspond--------");
+					System.out.println(
+							"1 : Versement - 2 : Retrait - 3 : Virement - 4 : Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
+					System.out.println();
 
 					while (scan.hasNextInt() == false)
 						scan.next();
-
 					choice = scan.nextInt();
+					double amount;
 					switch (choice) {
 					case 1:
 						System.out.println("Saissisez le montant à verser sur ce compte");
-						try {
-							bankJob.pay(accountId, isAmountPositive());
-						} catch (Exception e) {
-							System.out.println(e.getMessage());
-						}
+						amount = isAmountPositive();
+						bankJob.pay(accountId, amount);
+						System.out.println("La somme de " + amount + " a bien été ajouté sur votre compte.");
 						break;
 					case 2:
 						System.out.println("Saissisez le montant à retirer sur ce compte");
-						try {
-							bankJob.withdraw(accountId, isAmountPositive());
-						} catch (Exception e) {
-							System.out.println(e.getMessage());
-						}
+						amount = isAmountPositive();
+						bankJob.withdraw(accountId, amount);
+						System.out.println("La somme de " + amount + " a bien été retiré de votre compte.");
 						break;
 					case 3:
 						System.out.println("Saissisez le numéro de compte destinataire");
@@ -77,17 +62,14 @@ public class MyBankApp {
 							scan.next();
 						long accDes = scan.nextLong();
 
-						try {
-							bankJob.consultAccount(accDes); // verif si le compte destinataire existe si oui on continue
-							System.out.println("Saissisez le montant à virer sur ce compte");
-							bankJob.transfert(accountId, accDes, isAmountPositive());
-						} catch (Exception e) {
-							System.out.println(e.getMessage());
-						}
+						System.out.println("Saissisez le montant à virer sur ce compte");
+						amount = isAmountPositive();
+						bankJob.transfert(accountId, accDes, amount);
+						System.out.println("La somme de " + amount + " a bien été transféré.");
 						break;
 					case 4:
 						System.out.println("Information de ce compte");
-						System.out.println(account);
+						System.out.println(bankJob.consultAccount(accountId));
 						break;
 					case 5:
 						if (bankJob.listTransactions(accountId).size() > 0) {
@@ -100,28 +82,46 @@ public class MyBankApp {
 						break;
 					case 6:
 						System.out.println("Déconnexion");
-						app = false;
 						break;
 					default:
 						System.out.println("Mauvaise saisie, recommencez !");
 					}
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
 				}
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
 			}
-		} while (!app);
-		scan.close();
+		}
 	}
 
-	/**
-	 * Affiche le menu de l'application
-	 */
-	public static void menu() {
-		System.out.println();
-		System.out.println("--------Tapez le numéro correspond--------");
-		System.out.println(
-				"1 : Versement - 2 : Retrait - 3 : Virement - 4 : Information sur ce compte - 5 : Liste des opérations - 6 : Sortir");
-		System.out.println();
+	private static void initBank() {
+		robert = new Customer(1, "dupont", "robert", "robert.dupont@xmail.com");
+		julie = new Customer(2, "jolie", "julie", "julie.jolie@xmail.com");
+		firstAccount = new Current(100200300, new Date(), 1500, 200, robert);
+		secondAccount = new Saving(200300400, new Date(), 2000, 5.5, julie);
+		bankJob = new IBankBusinessImpl();
+		bankJob.addAccount(firstAccount);
+		bankJob.addAccount(secondAccount);
+	}
+
+	private static Long checkAccountId() {
+		Long accoundId = null;
+
+		while (scan.hasNext()) {
+			if (scan.hasNext(Pattern.compile("[0-9]+"))) {
+				accoundId = scan.nextLong();
+				try {
+					if (bankJob.consultAccount(accoundId) != null)
+						break;
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+			} else {
+				System.out.println("U numéro de compte bancaire est constitué que de chiffres");
+				scan.next();
+			}
+
+		}
+		return accoundId;
 	}
 
 	/**
